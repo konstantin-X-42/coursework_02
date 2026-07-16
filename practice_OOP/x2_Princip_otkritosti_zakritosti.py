@@ -65,8 +65,10 @@ if __name__ == '__main__':
     order.add_item("USB-кабель", 2, 250)
 
     # Печатаем стоимость заказа
+    print("- - полная стоимость заказа - -")
     print(order.total_price())
 
-    # Оплачиваем заказ
+    # Оплачиваем заказ дебетовой картой
+    print("\n- - оплата дебетовой картой - -")
     payment_processor = DebitPaymentProcessor()
     payment_processor.pay(order, "0372846")
