@@ -1,10 +1,13 @@
 """
-Принцип единой ответственности
-Single Responsibility — каждый класс должен иметь только одну зону ответственности.
+Принцип открытости/закрытости
+Open/Closed — программные сущности (классы, модули, функции и т. п.) должны быть открыты для расширения,
+но закрыты для изменения.
 
 Подход к реализации
-Выделите зоны ответственности в отдельные классы.
+Используйте абстрактные классы. Они могут определить, какие подклассы требуются,
+и усилить принцип единой ответственности, разделив обязанности кода.
 """
+from abc import ABC, abstractmethod
 
 
 class Order:
@@ -27,18 +30,29 @@ class Order:
         return sum(quantities * prices for quantities, prices in zip(self.quantities, self.prices))
 
 
-class PaymentProcessor:
+class PaymentProcessor(ABC):               # абстрактный класс
     """Проведение платежа"""
-    def pay_debit(self, security_code):
+    @abstractmethod
+    def pay(self, order, securite_code):   # блокируем изменение интерфейса
+        pass
+
+
+class DebitPaymentProcessor(PaymentProcessor):
+
+    def pay(self, order, security_code):
         """Оплата заказа дебетовой картой"""
         print("Обработка дебетового типа платежа")
         print(f"Проверка кода безопасности: {security_code}")
+        order.status = "paid"
 
-    def pay_credit(self, security_code):
+
+class CreditPaymentProcessor(PaymentProcessor):
+
+    def pay(self, order, security_code):
         """Оплата заказа кредитной картой"""
         print("Обработка кредитного типа платежа")
         print(f"Проверка кода безопасности: {security_code}")
-
+        order.status = "paid"
 
 
 if __name__ == '__main__':
@@ -54,5 +68,5 @@ if __name__ == '__main__':
     print(order.total_price())
 
     # Оплачиваем заказ
-    payment_processor = PaymentProcessor()
-    payment_processor.pay_debit("0372846")
+    payment_processor = DebitPaymentProcessor()
+    payment_processor.pay(order, "0372846")
