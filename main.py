@@ -1,34 +1,59 @@
-# Импортируем созданный вами класс из соседнего файла api.py
+# ========================================================
+# изменения шаг 3
+# 1. Полностью выполнены требования Шага 3: создан абстрактный класс BaseStorage и дочерний класс JsonFileStorage.
+# 2. Реализовано сохранение объектов в физический файл flights_data.json на диске.
+# 3. Реализован поиск по критериям (фильтрация по высоте/скорости) и удаление записей по позывному.
+# Сохраните оба файла (storage.py и main.py) и запустите main.py.
+# Посмотрите на результат в консоли и проверьте, появился ли в дереве проекта новый файл flights_data.json.
+# ========================================================
+
 from api import APIAdapter
+from models import Aeroplane
+from storage import JsonFileStorage  # Импортируем наш новый JSON-коннектор
 
 
 def main():
-    print("=== Программа отслеживания самолетов ===")
+    print("=== Программа отслеживания самолетов (Шаг 3) ===")
 
-    # Создаем инструмент для работы с API
     api = APIAdapter()
+    storage = JsonFileStorage()  # Инициализируем хранилище (создаст flights_data.json)
 
-    # Запрашиваем у пользователя страну
     target_country = input("Введите название страны на английском (например, Canada): ").strip()
 
     print(f"\n[Запрос] Ищем самолеты для страны: {target_country}...")
-
-    # Запускаем метод из файла api.py
     api.get_aeroplanes(target_country)
 
-    print("\n=== Результаты ===")
-    # Проверяем, удалось ли получить данные и записать их в self.aeroplanes
     if api.aeroplanes and 'states' in api.aeroplanes and api.aeroplanes['states'] is not None:
-        planes = api.aeroplanes['states']
-        print(f"✅ Успешно! Всего самолетов в воздухе: {len(planes)}")
+        raw_planes = api.aeroplanes['states']
 
-        # Выводим первые 5 самолетов с точными индексами из ТЗ
-        print("\nСписок первых 5 самолетов:")
-        for plane in planes[:5]:
-            callsign = plane[1].strip() if plane[1] else "Неизвестно"
-            origin = plane[2]
-            altitude = plane[7] if plane[7] else "на земле"
-            print(f" ✈️  Позывной: {callsign:<8} | Страна регистрации: {origin} | Высота: {altitude} м")
+        # 1. Парсинг в объекты и сохранение в файл
+        print("\n📥 Сохраняем полученные самолеты в JSON-файл...")
+        for p in raw_planes:
+            plane_obj = Aeroplane(
+                callsign=p[1],
+                origin_country=p[2],
+                velocity=p[9],
+                altitude=p[7]
+            )
+            storage.add_aeroplane(plane_obj)
+        print("✅ Данные успешно записаны в файл 'flights_data.json'.")
+
+        # 2. Чтение данных из файла с фильтрацией (Критерий: Высота > 5000м)
+        print("\n📋 Считываем из файла самолеты на высоте более 5000 метров:")
+        high_planes = storage.get_aeroplanes(min_altitude=5000.0)
+
+        for p in high_planes:
+            print(f" 🛫 Позывной: {p['callsign']:<8} | Скорость: {p['velocity']} м/с | Высота: {p['altitude']} м")
+
+        # 3. Демонстрация удаления информации из файла
+        print("\n🗑️ Тестирование удаления из файла...")
+        # Попробуем удалить один из демонстрационных самолетов
+        storage.delete_aeroplanes_by_callsign("WJA456")
+
+        # Проверяем файл после удаления
+        remaining_planes = storage.get_aeroplanes()
+        print(f"📊 Осталось самолетов в файле после удаления: {len(remaining_planes)}")
+
     else:
         print("🛬 В этой зоне сейчас нет самолетов или произошла ошибка запроса.")
 
@@ -37,7 +62,123 @@ if __name__ == "__main__":
     main()
 
 
+# ========================================================
+# изменения шаг 2
+# 1. Создан модуль models.py, полностью закрывающий ТЗ Шага 2.
+# 2. Программа теперь оперирует не абстрактными индексами, а понятными свойствами объектов
+#    (plane.velocity, plane.altitude).
+# 3. Реализована валидация (защита от значений None, когда самолет стоит на взлетной полосе).
+# ========================================================
+
+# from api import APIAdapter
+# from models import Aeroplane  # Импортируем наш новый класс
+#
+#
+# def main():
+#     print("=== Программа отслеживания самолетов (Шаг 2) ===")
+#
+#     api = APIAdapter()
+#     target_country = input("Введите название страны на английском (например, Canada): ").strip()
+#
+#     print(f"\n[Запрос] Ищем самолеты для страны: {target_country}...")
+#     api.get_aeroplanes(target_country)
+#
+#     print("\n=== Результаты обработки через класс Aeroplane ===")
+#     if api.aeroplanes and 'states' in api.aeroplanes and api.aeroplanes['states'] is not None:
+#         raw_planes = api.aeroplanes['states']
+#
+#         # Превращаем сырые списки OpenSky в список объектов нашего нового класса Aeroplane
+#         aeroplanes_objects = []
+#         for p in raw_planes:
+#             plane_obj = Aeroplane(
+#                 callsign=p[1],  # Индекс 1 — Позывной
+#                 origin_country=p[2],  # Индекс 2 — Страна регистрации
+#                 velocity=p[9],  # Индекс 9 — Скорость полета (м/с)
+#                 altitude=p[7]  # Индекс 7 — Высота полета (м)
+#             )
+#             aeroplanes_objects.append(plane_obj)
+#
+#         print(f"✅ Успешно преобразовано объектов: {len(aeroplanes_objects)}\n")
+#
+#         # Выводим информацию о созданных объектах
+#         for plane in aeroplanes_objects:
+#             print(f"✈️  Позывной: {plane.callsign:<8} | Скорость: {plane.velocity:<5} м/с | Высота: {plane.altitude} м")
+#
+#         # ДЕМОНСТРАЦИЯ СРАВНЕНИЯ САМОЛЕТОВ (если их больше одного)
+#         if len(aeroplanes_objects) >= 2:
+#             plane1 = aeroplanes_objects[0]
+#             plane2 = aeroplanes_objects[1]
+#
+#             print("\n=== Тестирование методов сравнения ООП ===")
+#             # Проверка сравнения по скорости через оператор >
+#             if plane1 > plane2:
+#                 print(
+#                     f"🏎️  Самолет {plane1.callsign} летит БЫСТРЕЕ, чем {plane2.callsign} ({plane1.velocity} > {plane2.velocity} м/с)")
+#             else:
+#                 print(
+#                     f"🏎️  Самолет {plane2.callsign} летит БЫСТРЕЕ, чем {plane1.callsign} ({plane2.velocity} > {plane1.velocity} м/с)")
+#
+#             # Проверка сравнения по высоте через наш метод is_higher_than
+#             if plane1.is_higher_than(plane2):
+#                 print(
+#                     f"⛰️  Самолет {plane1.callsign} летит ВЫШЕ, чем {plane2.callsign} ({plane1.altitude} > {plane2.altitude} м)")
+#             else:
+#                 print(
+#                     f"⛰️  Самолет {plane2.callsign} летит ВЫШЕ, чем {plane1.callsign} ({plane2.altitude} > {plane1.altitude} м)")
+#     else:
+#         print("🛬 В этой зоне сейчас нет самолетов или произошла ошибка запроса.")
+#
+#
+# if __name__ == "__main__":
+#     main()
+
+
+# ========================================================
+# рабочий вариант до шага 1
+# ========================================================
+
+
+# # Импортируем созданный вами класс из соседнего файла api.py
+# from api import APIAdapter
+#
+#
+# def main():
+#     print("=== Программа отслеживания самолетов ===")
+#
+#     # Создаем инструмент для работы с API
+#     api = APIAdapter()
+#
+#     # Запрашиваем у пользователя страну
+#     target_country = input("Введите название страны на английском (например, Canada): ").strip()
+#
+#     print(f"\n[Запрос] Ищем самолеты для страны: {target_country}...")
+#
+#     # Запускаем метод из файла api.py
+#     api.get_aeroplanes(target_country)
+#
+#     print("\n=== Результаты ===")
+#     # Проверяем, удалось ли получить данные и записать их в self.aeroplanes
+#     if api.aeroplanes and 'states' in api.aeroplanes and api.aeroplanes['states'] is not None:
+#         planes = api.aeroplanes['states']
+#         print(f"✅ Успешно! Всего самолетов в воздухе: {len(planes)}")
+#
+#         # Выводим первые 5 самолетов с точными индексами из ТЗ
+#         print("\nСписок первых 5 самолетов:")
+#         for plane in planes[:5]:
+#             callsign = plane[1].strip() if plane[1] else "Неизвестно"
+#             origin = plane[2]
+#             altitude = plane[7] if plane[7] else "на земле"
+#             print(f" ✈️  Позывной: {callsign:<8} | Страна регистрации: {origin} | Высота: {altitude} м")
+#     else:
+#         print("🛬 В этой зоне сейчас нет самолетов или произошла ошибка запроса.")
+#
+#
+# if __name__ == "__main__":
+#     main()
+
+
 # ===============================================================================================
+# в доработке
 # ===============================================================================================
 
 
