@@ -1,4 +1,146 @@
 # ========================================================
+# проект состоит из 4 логических модулей:
+# 1. api.py — реализует паттерн «Адаптер» и абстрактный класс для работы со сторонними сетевыми API
+#    (Nominatim и OpenSky Network) с механизмом защиты от сетевых блокировок.
+# 2. models.py — инкапсулирует данные о воздушном судне в объекты класса Aeroplane,
+#    осуществляет валидацию типов и перегрузку операторов сравнения (<, >, ==) для анализа скорости и высоты полёта.
+# 3. storage.py — реализует паттерн «Репозиторий» для персистентного хранения информации в формате
+#    JSON внутри изолированной директории data/.
+# 4. main.py — организует интерактивный CLI-интерфейс для конечного пользователя
+#    (сортировка ТОП-N, фильтрация по стране, удаление).
+# ========================================================
+
+# ========================================================
+# изменения шаг 4
+# 1. Консольный интерактивный интерфейс: Меню бесконечно крутится в цикле while True,
+#    пока пользователь явно не выберет пункт 5.
+# 2. Запрос страны при старте: Автоматически подгружает и сохраняет свежие данные в data/flights_data.json.
+# 3. ТОП N по высоте (Требование ТЗ): Пользователь сам вводит число N,
+#    программа сортирует объекты самолётов и отдаёт самые высокие рейсы.
+# 4. Фильтр по стране регистрации (Требование ТЗ): Программа ищет совпадения по полю origin_country.
+# 5. Дополнительная фича: Возможность удаления самолёта по позывному прямо из меню.
+# ========================================================
+
+
+from api import APIAdapter
+from models import Aeroplane
+from storage import JsonFileStorage
+
+
+def user_interaction():
+    """Функция для взаимодействия с пользователем через консоль (Шаг 4)."""
+    api = APIAdapter()
+    storage = JsonFileStorage()
+
+    print("====================================================")
+    print("🛫  ДОБРО ПОЖАЛОВАТЬ В СИСТЕМУ МОНИТОРИНГА АВИАРЕЙСОВ 🛬")
+    print("====================================================")
+
+    # 1. Первый обязательный шаг: запрос данных по стране
+    target_country = input("👉 Введите название страны на английском (например, Canada): ").strip()
+
+    print(f"\n[Запрос] Поиск самолетов для страны: {target_country}...")
+    api.get_aeroplanes(target_country)
+
+    # Загружаем полученные данные в список объектов Aeroplane и сохраняем в файл
+    aeroplanes_objects = []
+    if api.aeroplanes and 'states' in api.aeroplanes and api.aeroplanes['states'] is not None:
+        raw_planes = api.aeroplanes['states']
+        for p in raw_planes:
+            plane_obj = Aeroplane(
+                callsign=p[1],        # Индекс 1 — Позывной (например, "ACA123")
+                origin_country=p[2],  # Индекс 2 — Страна регистрации ("Canada")
+                velocity=p[9],        # Индекс 9 — Скорость
+                altitude=p[7]         # Индекс 7 — Высота
+            )
+            storage.add_aeroplane(plane_obj)
+            aeroplanes_objects.append(plane_obj)
+
+        print(f"✅ Данные успешно обновлены. Загружено объектов: {len(aeroplanes_objects)}")
+    else:
+        print("🛬 В этой зоне сейчас нет активных самолетов. Работаем с ранее сохраненной базой.")
+
+    # 2. Основной цикл интерактивного меню
+    while True:
+        print("\n" + "=" * 40)
+        print("📱 ГЛАВНОЕ МЕНЮ ПРОГРАММЫ:")
+        print("=" * 40)
+        print("1. Показать все самолеты в зоне")
+        print("2. Получить ТОП-N самолетов по высоте полета")
+        print("3. Найти самолеты по конкретной стране регистрации")
+        print("4. Удалить самолет из локальной базы по позывному")
+        print("5. Выйти из программы")
+        print("=" * 40)
+
+        choice = input("👉 Выберите пункт меню (1-5): ").strip()
+
+        # Перечитываем актуальные данные из JSON для точности
+        current_data = storage.get_aeroplanes()
+        planes_list = [
+            Aeroplane(p["callsign"], p["origin_country"], p["velocity"], p["altitude"])
+            for p in current_data
+        ]
+
+        if choice == "1":
+            print(f"\n📊 Всего самолетов в базе: {len(planes_list)}")
+            for idx, plane in enumerate(planes_list, 1):
+                print(
+                    f"{idx}. Позывной: {plane.callsign:<8} | Страна рег.: {plane.origin_country:<10} | Высота: {plane.altitude} м | Скорость: {plane.velocity} м/с")
+
+        elif choice == "2":
+            if not planes_list:
+                print("❌ База данных пуста.")
+                continue
+
+            try:
+                n = int(input(f"🔢 Сколько самолетов вывести в ТОП? (Доступно {len(planes_list)}): ").strip())
+                if n <= 0:
+                    print("❌ Число должно быть больше нуля.")
+                    continue
+
+                # Используем встроенный метод сортировки. Так как мы настроили методы __lt__ и __gt__ в Шаге 2,
+                # Python может сортировать объекты. Отсортируем по высоте явно через lambda:
+                sorted_by_alt = sorted(planes_list, key=lambda x: x.altitude, reverse=True)
+
+                print(f"\n👑 ТОП-{min(n, len(sorted_by_alt))} САМОЛЕТОВ ПО ВЫСОТЕ ПОЛЕТА:")
+                for idx, plane in enumerate(sorted_by_alt[:n], 1):
+                    print(
+                        f"🏆 {idx}. {plane.callsign:<8} -> Высота: {plane.altitude} м (Скорость: {plane.velocity} м/с)")
+            except ValueError:
+                print("❌ Пожалуйста, введите корректное целое число.")
+
+        elif choice == "3":
+            search_country = input(
+                "🔍 Введите название страны регистрации для поиска (например, Canada): ").strip().lower()
+            filtered = [p for p in planes_list if p.origin_country.lower() == search_country]
+
+            if filtered:
+                print(f"\n✈️ Найденные самолеты, зарегистрированные в {search_country.capitalize()}:")
+                for plane in filtered:
+                    print(
+                        f"• Позывной: {plane.callsign:<8} | Высота: {plane.altitude} м | Скорость: {plane.velocity} м/с")
+            else:
+                print(f"ℹ️ Самолётов со страной регистрации '{search_country.capitalize()}' не найдено.")
+
+        elif choice == "4":
+            callsign_to_del = input("🗑️ Введите позывной самолета для удаления: ").strip()
+            storage.delete_aeroplanes_by_callsign(callsign_to_del)
+
+        elif choice == "5":
+            print("\n👋 Программа успешно завершена. Спасибо за использование!")
+            break
+        else:
+            print("❌ Неверный пункт меню. Попробуйте еще раз.")
+
+
+def main():
+    user_interaction()
+
+
+if __name__ == "__main__":
+    main()
+
+# ========================================================
 # изменения шаг 3
 # 1. Полностью выполнены требования Шага 3: создан абстрактный класс BaseStorage и дочерний класс JsonFileStorage.
 # 2. Реализовано сохранение объектов в физический файл flights_data.json на диске.
@@ -7,59 +149,59 @@
 # Посмотрите на результат в консоли и проверьте, появился ли в дереве проекта новый файл flights_data.json.
 # ========================================================
 
-from api import APIAdapter
-from models import Aeroplane
-from storage import JsonFileStorage  # Импортируем наш новый JSON-коннектор
-
-
-def main():
-    print("=== Программа отслеживания самолетов (Шаг 3) ===")
-
-    api = APIAdapter()
-    storage = JsonFileStorage()  # Инициализируем хранилище (создаст flights_data.json)
-
-    target_country = input("Введите название страны на английском (например, Canada): ").strip()
-
-    print(f"\n[Запрос] Ищем самолеты для страны: {target_country}...")
-    api.get_aeroplanes(target_country)
-
-    if api.aeroplanes and 'states' in api.aeroplanes and api.aeroplanes['states'] is not None:
-        raw_planes = api.aeroplanes['states']
-
-        # 1. Парсинг в объекты и сохранение в файл
-        print("\n📥 Сохраняем полученные самолеты в JSON-файл...")
-        for p in raw_planes:
-            plane_obj = Aeroplane(
-                callsign=p[1],
-                origin_country=p[2],
-                velocity=p[9],
-                altitude=p[7]
-            )
-            storage.add_aeroplane(plane_obj)
-        print("✅ Данные успешно записаны в файл 'flights_data.json'.")
-
-        # 2. Чтение данных из файла с фильтрацией (Критерий: Высота > 5000м)
-        print("\n📋 Считываем из файла самолеты на высоте более 5000 метров:")
-        high_planes = storage.get_aeroplanes(min_altitude=5000.0)
-
-        for p in high_planes:
-            print(f" 🛫 Позывной: {p['callsign']:<8} | Скорость: {p['velocity']} м/с | Высота: {p['altitude']} м")
-
-        # 3. Демонстрация удаления информации из файла
-        print("\n🗑️ Тестирование удаления из файла...")
-        # Попробуем удалить один из демонстрационных самолетов
-        storage.delete_aeroplanes_by_callsign("WJA456")
-
-        # Проверяем файл после удаления
-        remaining_planes = storage.get_aeroplanes()
-        print(f"📊 Осталось самолетов в файле после удаления: {len(remaining_planes)}")
-
-    else:
-        print("🛬 В этой зоне сейчас нет самолетов или произошла ошибка запроса.")
-
-
-if __name__ == "__main__":
-    main()
+# from api import APIAdapter
+# from models import Aeroplane
+# from storage import JsonFileStorage  # Импортируем наш новый JSON-коннектор
+#
+#
+# def main():
+#     print("=== Программа отслеживания самолетов (Шаг 3) ===")
+#
+#     api = APIAdapter()
+#     storage = JsonFileStorage()  # Инициализируем хранилище (создаст flights_data.json)
+#
+#     target_country = input("Введите название страны на английском (например, Canada): ").strip()
+#
+#     print(f"\n[Запрос] Ищем самолеты для страны: {target_country}...")
+#     api.get_aeroplanes(target_country)
+#
+#     if api.aeroplanes and 'states' in api.aeroplanes and api.aeroplanes['states'] is not None:
+#         raw_planes = api.aeroplanes['states']
+#
+#         # 1. Парсинг в объекты и сохранение в файл
+#         print("\n📥 Сохраняем полученные самолеты в JSON-файл...")
+#         for p in raw_planes:
+#             plane_obj = Aeroplane(
+#                 callsign=p[1],
+#                 origin_country=p[2],
+#                 velocity=p[9],
+#                 altitude=p[7]
+#             )
+#             storage.add_aeroplane(plane_obj)
+#         print("✅ Данные успешно записаны в файл 'flights_data.json'.")
+#
+#         # 2. Чтение данных из файла с фильтрацией (Критерий: Высота > 5000м)
+#         print("\n📋 Считываем из файла самолеты на высоте более 5000 метров:")
+#         high_planes = storage.get_aeroplanes(min_altitude=5000.0)
+#
+#         for p in high_planes:
+#             print(f" 🛫 Позывной: {p['callsign']:<8} | Скорость: {p['velocity']} м/с | Высота: {p['altitude']} м")
+#
+#         # 3. Демонстрация удаления информации из файла
+#         print("\n🗑️ Тестирование удаления из файла...")
+#         # Попробуем удалить один из демонстрационных самолетов
+#         storage.delete_aeroplanes_by_callsign("WJA456")
+#
+#         # Проверяем файл после удаления
+#         remaining_planes = storage.get_aeroplanes()
+#         print(f"📊 Осталось самолетов в файле после удаления: {len(remaining_planes)}")
+#
+#     else:
+#         print("🛬 В этой зоне сейчас нет самолетов или произошла ошибка запроса.")
+#
+#
+# if __name__ == "__main__":
+#     main()
 
 
 # ========================================================
