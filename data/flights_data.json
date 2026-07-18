@@ -16,5 +16,101 @@
         "origin_country": "Canada",
         "velocity": 180.0,
         "altitude": 4572.0
+    },
+    {
+        "callsign": "EWG585",
+        "origin_country": "Germany",
+        "velocity": 71.71,
+        "altitude": 220.98
+    },
+    {
+        "callsign": "CHX42",
+        "origin_country": "Germany",
+        "velocity": 50.95,
+        "altitude": 472.44
+    },
+    {
+        "callsign": "CHX76",
+        "origin_country": "Germany",
+        "velocity": 57.8,
+        "altitude": 541.02
+    },
+    {
+        "callsign": "FM2",
+        "origin_country": "Germany",
+        "velocity": 3.6,
+        "altitude": 0.0
+    },
+    {
+        "callsign": "FM3",
+        "origin_country": "Germany",
+        "velocity": 2.31,
+        "altitude": 0.0
+    },
+    {
+        "callsign": "PCT406",
+        "origin_country": "Germany",
+        "velocity": 84.38,
+        "altitude": 236.22
+    },
+    {
+        "callsign": "DAIMN",
+        "origin_country": "Germany",
+        "velocity": 0.0,
+        "altitude": 426.72
+    },
+    {
+        "callsign": "BCS6756",
+        "origin_country": "Germany",
+        "velocity": 255.73,
+        "altitude": 11277.6
+    },
+    {
+        "callsign": "DLH1JF",
+        "origin_country": "Germany",
+        "velocity": 246.05,
+        "altitude": 10972.8
+    },
+    {
+        "callsign": "TUI9MD",
+        "origin_country": "Germany",
+        "velocity": 247.15,
+        "altitude": 11582.4
+    },
+    {
+        "callsign": "BCS80A",
+        "origin_country": "Germany",
+        "velocity": 102.28,
+        "altitude": 1028.7
+    },
+    {
+        "callsign": "BPO260",
+        "origin_country": "Germany",
+        "velocity": 3.09,
+        "altitude": 464.82
+    },
+    {
+        "callsign": "BPO461",
+        "origin_country": "Germany",
+        "velocity": 56.02,
+        "altitude": 525.78
+    },
+    {
+        "callsign": "BPO160",
+        "origin_country": "Germany",
+        "velocity": 62.99,
+        "altitude": 434.34
+    },
+    {
+        "callsign": "EDL2",
+        "origin_country": "Germany",
+        "velocity": 9.16,
+        "altitude": 624.84
+    },
+    {
+        "callsign": "ELEKT02",
+        "origin_country": "Germany",
+        "velocity": 6.69,
+        "altitude": 0.0
     }
 ]

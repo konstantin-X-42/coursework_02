@@ -30,7 +30,7 @@ from requests import get
 
 
 # =====================================================================
-# 1. АБСТРАКТНЫЙ КЛАСС ДЛЯ РАБОТЫ С API (Требование Шага 1)
+# 1. АБСТРАКТНЫЙ КЛАСС ДЛЯ РАБОТЫ С API (Шаг 1)
 # =====================================================================
 class BaseAPIAdapter(ABC):
 
@@ -44,14 +44,16 @@ class BaseAPIAdapter(ABC):
 
 
 # =====================================================================
-# 2. РЕАЛИЗАЦИЯ КЛАССА-НАСЛЕДНИКА (Требование Шага 1)
+# 2. РЕАЛИЗАЦИЯ КЛАССА-НАСЛЕДНИКА (Шаг 1)
 # =====================================================================
 class APIAdapter(BaseAPIAdapter):
 
     def __init__(self) -> None:
-        self.openstreetmap_url = 'https://openstreetmap.org'
-        self.opensky_url = 'https://opensky-network.org'
+        self.openstreetmap_url = "https://nominatim.openstreetmap.org/search"  # 'https://openstreetmap.org'
+        self.opensky_url = "https://opensky-network.org/api/states/all"  # 'https://opensky-network.org'
         self.aeroplanes = None
+        # Флаг режима работы
+        self.offline_mode = False
 
         # Локальный справочник координат стран на случай сбоя внешних API
         self._fallback_bounds = {
@@ -63,94 +65,397 @@ class APIAdapter(BaseAPIAdapter):
         }
 
     def get_aeroplanes(self, country: str) -> None:
+
+        """Получение самолетов"""
+
         country_clean = country.strip().lower()
+
         geo_coordinates = None
 
-        # Попытка №1: Запрос к серверу Nominatim
+        geo_source = None
+
+        # =============================================================
+        # 1. Получаем координаты через Nominatim
+        # =============================================================
+
+
         random_id = random.randint(1000, 9999)
-        headers_nominatim = {
-            'User-Agent': f'AviationWorkspaceUniversityProject_{random_id}/1.0 (student_project@example.com)'
+
+
+        headers = {
+
+            "User-Agent":
+            f"AviationProject_{random_id}/1.0"
         }
-        params_nominatim = {
-            'country': country,
-            'format': 'json',
-            'limit': 1,
+
+
+        params = {
+
+            "q": country,
+
+            "format": "json",
+
+            "limit": 1
         }
+
+
 
         try:
-            response = get(url=self.openstreetmap_url, params=params_nominatim, headers=headers_nominatim)
-            if response.status_code == 200:
-                data = response.json()
-                if data and isinstance(data, list) and len(data) > 0:
-                    geo_coordinates = data[0].get('boundingbox')
-        except Exception:
-            pass
 
-        # Попытка №2: Локальный справочник, если сервер недоступен
+            response = get(
+
+                url=self.openstreetmap_url,
+
+                params=params,
+
+                headers=headers,
+
+                timeout=50
+            )
+
+
+            if response.status_code == 200:
+
+
+                data = response.json()
+
+
+                if data:
+
+
+                    geo_coordinates = (
+                        data[0]
+                        .get("boundingbox")
+                    )
+
+
+                    geo_source = (
+                        "Nominatim API"
+                    )
+
+
+        except Exception as e:
+
+            print(
+                f"⚠️ Ошибка Nominatim: {e}"
+            )
+
+        # =============================================================
+        # 2. Если сервер не дал координаты
+        #    используем локальный справочник
+        # =============================================================
+
         if not geo_coordinates:
+
             if country_clean in self._fallback_bounds:
-                print(f"⚠️ Внешний геокодер недоступен. Используем встроенные координаты для {country}...")
-                geo_coordinates = self._fallback_bounds[country_clean]
+
+                print(
+                    "⚠️ Nominatim недоступен."
+                )
+
+                print(
+                    "📚 Используем локальный справочник координат."
+                )
+
+                geo_coordinates = (
+                    self._fallback_bounds[country_clean]
+                )
+
+                geo_source = (
+                    "Локальный справочник"
+                )
+
+
             else:
-                print(f"❌ Не удалось получить координаты для '{country}' ни через сервер, ни локально.")
+
+                print(
+                    f"❌ Координаты для {country} не найдены."
+                )
+
                 self.aeroplanes = None
+
                 return
 
-        # Формируем параметры для отправки радарам OpenSky
-        params = {
+        # =============================================================
+        # Вывод проверки координат
+        # =============================================================
+
+
+        print()
+
+        print(
+            f"📍 Источник координат: {geo_source}"
+        )
+
+
+        print(
+            f"📍 Координаты зоны: {geo_coordinates}"
+        )
+
+        # =============================================================
+        # Запрос OpenSky
+        # =============================================================
+
+        opensky_params = {
             'lamin': float(geo_coordinates[0]),  # Юг
             'lamax': float(geo_coordinates[1]),  # Север
             'lomin': float(geo_coordinates[2]),  # Запад
             'lomax': float(geo_coordinates[3]),  # Восток
         }
 
-        print(f"🌐 Координаты зоны определены. Запрашиваем радары OpenSky Network...")
+
+        print()
+
+        print(
+            "🌐 Отправляем запрос OpenSky:"
+        )
+
+
+        print(
+            opensky_params
+        )
+
+
         try:
-            response = get(url=self.opensky_url, params=params)
+
+
+            response = get(
+
+                url=self.opensky_url,
+
+                params=opensky_params,
+
+                timeout=15
+            )
+
+            print()
+
+            print(
+                "🔗 URL запроса:"
+            )
+
+
+            print(
+                response.url
+            )
+
+
+
             if response.status_code == 200:
-                self.aeroplanes = response.json()
+
+
+                self.aeroplanes = (
+                    response.json()
+                )
+
+                states = self.aeroplanes.get("states") or []
+
+                filtered_planes = []
+
+                for plane in states:
+
+                    if (
+                            isinstance(plane, list)
+                            and len(plane) > 2
+                            and plane[2]
+                            and plane[2].lower() == country.lower()
+                    ):
+                        filtered_planes.append(plane)
+
+                self.aeroplanes["states"] = filtered_planes
+
+
+                self.offline_mode = False
+
+
+
+                count = len(
+                    self.aeroplanes.get(
+                        "states",
+                        []
+                    )
+                    or []
+                )
+
+
+                print()
+
+                print(
+                    f"✅ Получены реальные данные OpenSky."
+                )
+
+                print(
+                    f"✈️ Самолетов найдено: {count}"
+                )
+
+
+
             else:
-                print(f"❌ Ошибка OpenSky API. Код ответа радара: {response.status_code}")
-                print("🎮 Включаем демонстрационный режим: генерируем реальные тестовые данные для курсовой...")
-                self.aeroplanes = {
-                    "time": 1700000000,
-                    "states": [
-                        ["c820b3", "ACA123  ", "Canada", 1700000100, 1700000100, -75.67, 45.42, 10668.0, False, 240.5,
-                         90.0, 0.0, None, 10800.0, "3412", False, 0],
-                        ["a143b8", "WJA456  ", "Canada", 1700000100, 1700000100, -114.07, 51.04, 9144.0, False, 210.2,
-                         270.0, 1.5, None, 9300.0, "1205", False, 0],
-                        ["c801a2", "JZA789  ", "Canada", 1700000100, 1700000100, -79.38, 43.65, 4572.0, False, 180.0,
-                         180.0, -3.2, None, 4800.0, "5561", False, 0]
-                    ]
-                }
+
+
+                print(
+                    f"❌ OpenSky ошибка: {response.status_code}"
+                )
+
+
+                self.aeroplanes = None
+
+
+
         except Exception as e:
-            print(f"❌ Произошла ошибка при подключении к OpenSky: {e}")
+
+
+            print(
+                f"❌ Ошибка OpenSky: {e}"
+            )
+
+
             self.aeroplanes = None
 
 
 # =====================================================================
-# ПРОВЕРКА РАБОТЫ КЛАССА
+# Проверка работы модуля
 # =====================================================================
 if __name__ == "__main__":
     api = APIAdapter()
-    target_country = 'Canada'
+    country = 'Canada'
 
-    print(f"Запускаем поиск самолетов для страны: {target_country}...")
-    api.get_aeroplanes(target_country)
+    print(f"Поиск самолетов для страны: {country}")
+    api.get_aeroplanes(country)
 
     print("\n=== Результаты обработки ответа ===")
-    if api.aeroplanes and 'states' in api.aeroplanes and api.aeroplanes['states'] is not None:
-        planes = api.aeroplanes['states']
-        print(f"✅ Успешно! Всего самолетов в воздушном пространстве {target_country}: {len(planes)}")
 
-        print("\nПримеры обнаруженных рейсов:")
-        for plane in planes[:5]:
-            callsign = plane[1].strip() if plane[1] else "Неизвестно"
-            origin = plane[2]
-            altitude = plane[7] if plane[7] else "на земле"
-            print(f" ✈️  Позывной: {callsign:<8} | Страна регистрации: {origin} | Высота: {altitude} м")
+    if (
+            api.aeroplanes
+            and api.aeroplanes.get("states")
+    ):
+
+        planes = (
+            api.aeroplanes["states"]
+        )
+
+        if api.offline_mode:
+
+            print(
+                "⚠️ ОФЛАЙН-РЕЖИМ"
+            )
+
+            print(
+                "Примеры обнаруженных рейсов:"
+            )
+
+
+
+        else:
+
+            print(
+                "🌐 РЕАЛЬНЫЕ ДАННЫЕ OPEN SKY"
+            )
+
+            print(
+                "Полный список рейсов:"
+            )
+
+        for plane in planes:
+            callsign = (
+
+                plane[1].strip()
+
+                if plane[1]
+
+                else "Unknown"
+            )
+
+            country = (
+
+                plane[2]
+
+                if plane[2]
+
+                else "Unknown"
+            )
+
+            altitude = (
+
+                plane[7]
+
+                if plane[7]
+
+                else "На земле"
+            )
+
+            velocity = (
+
+                plane[9]
+
+                if plane[9]
+
+                else "Нет данных"
+            )
+
+            print(
+
+                f"✈️ {callsign:<10}"
+                f" | {country:<15}"
+                f" | Высота: {altitude} м"
+                f" | Скорость: {velocity} м/с"
+
+            )
+
+
     else:
-        print("🛬 В выбранном регионе в данный момент нет летящих самолетов или радар вернул пустой ответ.")
+
+        print(
+            "🛬 Самолеты не найдены."
+        )
+
+    # if api.aeroplanes and 'states' in api.aeroplanes and api.aeroplanes['states'] is not None:
+    #     planes = api.aeroplanes['states']
+    #     print(f"✅ Успешно! Всего самолетов в воздушном пространстве {country}: {len(planes)}")
+    #
+    #     if api.offline_mode:
+    #
+    #         print("\n⚠️ ОФЛАЙН-РЕЖИМ")
+    #         print("Примеры обнаруженных рейсов:")
+    #
+    #     else:
+    #
+    #         print("\n🌐 РЕАЛЬНЫЕ ДАННЫЕ OPEN SKY NETWORK")
+    #         print("Полный список обнаруженных рейсов:")
+    #
+    #     for plane in planes:
+    #         callsign = (
+    #             plane[1].strip()
+    #             if plane[1]
+    #             else "Неизвестно"
+    #         )
+    #
+    #         origin = (
+    #             plane[2]
+    #             if plane[2]
+    #             else "Неизвестно"
+    #         )
+    #
+    #         altitude = (
+    #             plane[7]
+    #             if plane[7]
+    #             else "на земле"
+    #         )
+    #
+    #         velocity = (
+    #             plane[9]
+    #             if len(plane) > 9 and plane[9]
+    #             else "нет данных"
+    #         )
+    #
+    #         print(
+    #             f" ✈️ Позывной: {callsign:<10} | "
+    #             f"Страна: {origin:<15} | "
+    #             f"Высота: {altitude} м | "
+    #             f"Скорость: {velocity} м/с"
+    #             )
+    # else:
+    #     print("🛬 В выбранном регионе в данный момент нет летящих самолетов или радар вернул пустой ответ.")
 
 # =====================================================
 # рабочий вариант до шага 1
