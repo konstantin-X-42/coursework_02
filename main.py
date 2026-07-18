@@ -78,6 +78,9 @@ def user_interaction():
     aeroplanes_objects = []
     if api.aeroplanes and 'states' in api.aeroplanes and api.aeroplanes['states'] is not None:
         raw_planes = api.aeroplanes['states']
+        # ОЧИЩАЕМ СТАРЫЕ ДАННЫЕ ПЕРЕД НОВОЙ ЗАГРУЗКОЙ
+        storage.clear_storage()
+
         for p in raw_planes:
             plane_obj = Aeroplane(
                 callsign=p[1],        # Индекс 1 — Позывной (например, "ACA123")

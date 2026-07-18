@@ -9,7 +9,7 @@ from models import Aeroplane
 
 
 # =====================================================================
-# 1. АБСТРАКТНЫЙ КЛАСС ДЛЯ РАБОТЫ С ХРАНИЛИЩЕМ (Требование Шага 3)
+# 1. АБСТРАКТНЫЙ КЛАСС ДЛЯ РАБОТЫ С ХРАНИЛИЩЕМ (Шаг 3)
 # =====================================================================
 class BaseStorage(ABC):
 
@@ -30,7 +30,7 @@ class BaseStorage(ABC):
 
 
 # =====================================================================
-# 2. РЕАЛИЗАЦИЯ JSON-КОННЕКТОРА (Требование Шага 3)
+# 2. РЕАЛИЗАЦИЯ JSON-КОННЕКТОРА (Шаг 3)
 # =====================================================================
 class JsonFileStorage(BaseStorage):
 
@@ -58,6 +58,11 @@ class JsonFileStorage(BaseStorage):
         """Внутренний метод для записи данных в JSON."""
         with open(self.filename, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
+
+    # def clear_storage(self) -> None:
+    #     """Полностью очищает локальную базу самолетов."""
+    #     with open(self.filename, "w", encoding="utf-8") as file:
+    #         json.dump([], file, ensure_ascii=False, indent=4)
 
     # Реализация метода ДОБАВЛЕНИЯ
     def add_aeroplane(self, aeroplane: Aeroplane) -> None:
