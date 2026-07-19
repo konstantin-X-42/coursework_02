@@ -1,1 +1,0 @@
-# Курсовой проект: "Приложение для анализа банковских операций клиента". <img width="137" height="41" alt="Screenshot_4" src="https://github.com/user-attachments/assets/ac708293-d4d3-4222-980d-a89643052ae0" />
