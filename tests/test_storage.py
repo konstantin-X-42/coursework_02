@@ -36,7 +36,6 @@ def test_base_storage_is_abstract():
     with pytest.raises(TypeError):
         BaseStorage()
 
-
 # =====================================================================
 # Фикстура временного JSON-хранилища
 # =====================================================================
@@ -53,7 +52,6 @@ def storage(tmp_path):
     return JsonFileStorage(
         filename=str(file_path)
     )
-
 
 # =====================================================================
 # Проверка создания файла
@@ -77,7 +75,6 @@ def test_storage_creates_file(tmp_path):
         data = json.load(f)
 
     assert data == []
-
 
 # =====================================================================
 # Добавление самолета
@@ -105,16 +102,12 @@ def test_add_aeroplane(storage):
     assert result[0]["velocity"] == 250.0
     assert result[0]["altitude"] == 10000.0
 
-
 # =====================================================================
 # Проверка отсутствия дублей
 # =====================================================================
 
 def test_add_same_callsign_updates_plane(storage):
-    """
-    При повторном добавлении самолета
-    с тем же callsign старый заменяется.
-    """
+    """ При повторном добавлении самолета с тем же callsign старый заменяется. """
 
     plane1 = Aeroplane(
         "TEST001",
@@ -130,18 +123,14 @@ def test_add_same_callsign_updates_plane(storage):
         9000
     )
 
-
     storage.add_aeroplane(plane1)
     storage.add_aeroplane(plane2)
 
-
     result = storage.get_aeroplanes()
-
 
     assert len(result) == 1
     assert result[0]["velocity"] == 300
     assert result[0]["altitude"] == 9000
-
 
 # =====================================================================
 # Фильтрация
@@ -172,10 +161,8 @@ def test_filter_by_speed(storage):
         min_speed=300
     )
 
-
     assert len(result) == 1
     assert result[0]["callsign"] == "FAST"
-
 
 
 def test_filter_by_altitude(storage):
@@ -203,10 +190,8 @@ def test_filter_by_altitude(storage):
         min_altitude=5000
     )
 
-
     assert len(result) == 1
     assert result[0]["callsign"] == "HIGH"
-
 
 
 def test_filter_by_speed_and_altitude(storage):
@@ -228,8 +213,6 @@ def test_filter_by_speed_and_altitude(storage):
 
 
     assert len(result) == 1
-
-
 
 # =====================================================================
 # Удаление
@@ -258,7 +241,6 @@ def test_delete_aeroplane(storage):
     assert result == []
 
 
-
 def test_delete_case_insensitive(storage):
 
     storage.add_aeroplane(
@@ -275,9 +257,7 @@ def test_delete_case_insensitive(storage):
         " abc123 "
     )
 
-
     assert storage.get_aeroplanes() == []
-
 
 
 def test_delete_not_existing(storage):
@@ -291,16 +271,12 @@ def test_delete_not_existing(storage):
         )
     )
 
-
     # Ошибки быть не должно
     storage.delete_aeroplanes_by_callsign(
         "BBB"
     )
 
-
     assert len(storage.get_aeroplanes()) == 1
-
-
 
 # =====================================================================
 # Проверка поврежденного JSON
@@ -313,10 +289,8 @@ def test_broken_json_returns_empty(tmp_path):
     with open(file_path, "w") as f:
         f.write("broken json")
 
-
     storage = JsonFileStorage(
         filename=str(file_path)
     )
-
 
     assert storage.get_aeroplanes() == []
