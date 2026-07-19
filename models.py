@@ -14,7 +14,7 @@ class Aeroplane:
         self.altitude = float(altitude) if altitude is not None else 0.0
 
     def __repr__(self) -> str:
-        """Красивое текстовое представление объекта в коде."""
+        """Текстовое представление объекта в коде."""
         return f"Aeroplane(Callsign: {self.callsign}, Country: {self.origin_country}, Speed: {self.velocity} m/s, Alt: {self.altitude} m)"
 
     # =====================================================================
