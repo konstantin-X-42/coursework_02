@@ -8,21 +8,6 @@ from api import BaseAPIAdapter, APIAdapter
 # poetry run pytest tests/test_api.py --cov=api --cov-report=html
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-# ====================================================================
-# В ТЕСТАХ ПРОВЕРЯЕМ:
-# создание и работу абстрактного класса BaseAPIAdapter;
-# корректную инициализацию класса APIAdapter;
-# наличие локального справочника координат стран (_fallback_bounds);
-# успешное получение координат через OpenStreetMap API;
-# успешное получение данных о самолетах через OpenSky API;
-# использование резервных координат при недоступности OpenStreetMap;
-# обработку неизвестной страны;
-# обработку ошибок подключения к OpenStreetMap;
-# обработку ошибок ответа OpenSky;
-# запуск демонстрационного режима при ошибке OpenSky;
-# корректное сохранение результата в self.aeroplanes.
-# ====================================================================
-
 # =====================================================================
 # Проверка абстрактного класса
 # =====================================================================
@@ -34,7 +19,6 @@ def test_base_api_adapter_is_abstract():
 
     with pytest.raises(TypeError):
         BaseAPIAdapter()
-
 
 # =====================================================================
 # Проверка создания APIAdapter
@@ -51,8 +35,6 @@ def test_api_adapter_creation():
 
     assert "canada" in api._fallback_bounds
     assert "russia" in api._fallback_bounds
-
-
 
 # =====================================================================
 # Проверка успешного получения координат через OpenStreetMap
@@ -111,8 +93,6 @@ def test_get_aeroplanes_success(mock_get):
     assert "states" in api.aeroplanes
     assert len(api.aeroplanes["states"]) == 1
 
-
-
 # =====================================================================
 # Проверка fallback координат
 # =====================================================================
@@ -140,7 +120,6 @@ def test_get_aeroplanes_fallback(mock_get):
     assert api.aeroplanes is not None
     assert "demo1234" in api.aeroplanes["states"][0]
 
-
 # =====================================================================
 # Проверка неизвестной страны
 # =====================================================================
@@ -167,8 +146,6 @@ def test_unknown_country(mock_get):
 
 
     assert api.aeroplanes is None
-
-
 
 # =====================================================================
 # Проверка ошибки OpenSky
@@ -215,8 +192,6 @@ def test_opensky_error_generates_demo_data(mock_get):
     assert api.aeroplanes is not None
     assert "states" in api.aeroplanes
     assert len(api.aeroplanes["states"]) == 1
-
-
 
 # =====================================================================
 # Проверка ошибки JSON OpenSky
