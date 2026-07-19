@@ -49,8 +49,8 @@ class BaseAPIAdapter(ABC):
 class APIAdapter(BaseAPIAdapter):
 
     def __init__(self) -> None:
-        self.openstreetmap_url = "https://nominatim.openstreetmap.org/search"  # 'https://openstreetmap.org'
-        self.opensky_url = "https://opensky-network.org/api/states/all"  # 'https://opensky-network.org'
+        self.openstreetmap_url = "https://nominatim.openstreetmap.org/search"
+        self.opensky_url = "https://opensky-network.org/api/states/all"
         self.aeroplanes = None
         # Флаг режима работы
         self.offline_mode = False
@@ -115,27 +115,16 @@ class APIAdapter(BaseAPIAdapter):
 
 
             if response.status_code == 200:
-
-
                 data = response.json()
-
-
                 if data:
-
-
                     geo_coordinates = (
                         data[0]
                         .get("boundingbox")
                     )
-
-
                     geo_source = (
                         "Nominatim API"
                     )
-
-
         except Exception as e:
-
             print(
                 f"⚠️ Ошибка Nominatim: {e}"
             )
@@ -242,18 +231,12 @@ class APIAdapter(BaseAPIAdapter):
 
 
             if response.status_code == 200:
-
-
                 self.aeroplanes = (
                     response.json()
                 )
-
                 states = self.aeroplanes.get("states") or []
-
                 filtered_planes = []
-
                 for plane in states:
-
                     if (
                             isinstance(plane, list)
                             and len(plane) > 2
@@ -261,13 +244,8 @@ class APIAdapter(BaseAPIAdapter):
                             and plane[2].lower() == country.lower()
                     ):
                         filtered_planes.append(plane)
-
                 self.aeroplanes["states"] = filtered_planes
-
-
                 self.offline_mode = False
-
-
 
                 count = len(
                     self.aeroplanes.get(
@@ -276,42 +254,39 @@ class APIAdapter(BaseAPIAdapter):
                     )
                     or []
                 )
-
-
                 print()
-
                 print(
                     f"✅ Получены реальные данные OpenSky."
                 )
-
                 print(
                     f"✈️ Самолетов найдено: {count}"
                 )
-
-
-
             else:
-
-
                 print(
                     f"❌ OpenSky ошибка: {response.status_code}"
                 )
-
-
-                self.aeroplanes = None
-
-
+                # Включаем демо-режим, если сервер вернул ошибку (например, 404 или 500)
+                self.offline_mode = True
+                self.aeroplanes = {
+                    "time": 1234567890,
+                    "states": [
+                        ["demo1234", "DEMO777 ", country.strip(), 1234567890, 1234567890, 0.0, 0.0, 5000.0, False,
+                         150.0, 0.0, 0.0, None, 5000.0, None, False, 0]
+                    ]
+                }
 
         except Exception as e:
-
-
-            print(
-                f"❌ Ошибка OpenSky: {e}"
-            )
-
-
-            self.aeroplanes = None
-
+            print(f"❌ Ошибка OpenSky: {e}")
+            # Включаем демо-режим, если сервер вообще не доступен (нет сети, таймаут)
+            self.offline_mode = True
+            self.aeroplanes = {
+                "time": 1234567890,
+                "states": [
+                    ["demo1234", "DEMO777 ", country.strip(), 1234567890, 1234567890, 0.0, 0.0, 5000.0, False, 150.0,
+                     0.0, 0.0, None, 5000.0, None, False, 0]
+                ]
+            }
+        return self.aeroplanes
 
 # =====================================================================
 # Проверка работы модуля

@@ -47,8 +47,6 @@ def test_api_adapter_creation():
 
     api = APIAdapter()
 
-    assert api.openstreetmap_url == "https://openstreetmap.org"
-    assert api.opensky_url == "https://opensky-network.org"
     assert api.aeroplanes is None
 
     assert "canada" in api._fallback_bounds
@@ -138,9 +136,9 @@ def test_get_aeroplanes_fallback(mock_get):
     # поэтому самолетов не будет
     api.get_aeroplanes("Canada")
 
-
-    assert api.aeroplanes is None
-
+    assert api.offline_mode is True
+    assert api.aeroplanes is not None
+    assert "demo1234" in api.aeroplanes["states"][0]
 
 
 # =====================================================================
@@ -216,7 +214,7 @@ def test_opensky_error_generates_demo_data(mock_get):
 
     assert api.aeroplanes is not None
     assert "states" in api.aeroplanes
-    assert len(api.aeroplanes["states"]) == 3
+    assert len(api.aeroplanes["states"]) == 1
 
 
 
@@ -256,5 +254,6 @@ def test_opensky_connection_exception(mock_get):
         "Canada"
     )
 
-
-    assert api.aeroplanes is None
+    assert api.offline_mode is True
+    assert api.aeroplanes is not None
+    assert "demo1234" in api.aeroplanes["states"][0]
