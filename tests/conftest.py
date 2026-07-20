@@ -3,7 +3,7 @@ import shutil
 
 import pytest
 
-from storage import JsonFileStorage
+from src.storage import JsonFileStorage
 
 
 # =====================================================================

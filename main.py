@@ -1,6 +1,6 @@
-from api import APIAdapter
-from models import Aeroplane
-from storage import JsonFileStorage
+from src.api import APIAdapter
+from src.models import Aeroplane
+from src.storage import JsonFileStorage
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Запуск всех тестов проекта

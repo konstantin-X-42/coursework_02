@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
 
-from api import BaseAPIAdapter, APIAdapter
+from src.api import BaseAPIAdapter, APIAdapter
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # запуск тестов в модуле test_api.py с покрытием в html

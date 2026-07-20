@@ -1,9 +1,8 @@
-import os
 import json
 import pytest
 
-from models import Aeroplane
-from storage import BaseStorage, JsonFileStorage
+from src.models import Aeroplane
+from src.storage import BaseStorage, JsonFileStorage
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # запуск тестов в модуле test_storage.py с покрытием в html

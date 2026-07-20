@@ -1,6 +1,6 @@
 import pytest
 
-from models import Aeroplane
+from src.models import Aeroplane
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # запуск тестов в модуле test_models.py с покрытием в html
