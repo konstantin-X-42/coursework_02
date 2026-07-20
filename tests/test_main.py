@@ -253,7 +253,7 @@ def test_menu_exit(mock_storage, mock_api, monkeypatch, capsys):
 
     output = capsys.readouterr().out
 
-    assert "Программа успешно завершена" in output
+    assert "Программа мониторинга авиарейсов ✈️ успешно завершена." in output
 
 
 # ====================================================================
