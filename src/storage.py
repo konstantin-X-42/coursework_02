@@ -111,6 +111,6 @@ class JsonFileStorage(BaseStorage):
         if len(data) != len(filtered_data):
             print(f"🗑️ Из файла удален самолет с позывным {clean_callsign}.")
         else:
-            print(f"ℹ️ Самолет с позывным {clean_callsign} не найден в файле.")
+            print(f"❌ Самолет с позывным {clean_callsign} не найден в файле.")
 
         self._save_to_file(filtered_data)

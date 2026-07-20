@@ -75,7 +75,7 @@ class APIAdapter(BaseAPIAdapter):
                     geo_coordinates = data[0].get("boundingbox")
                     geo_source = "Nominatim API"
         except Exception as e:
-            print(f"⚠️ Ошибка Nominatim: {e}")
+            print(f"❌ Ошибка Nominatim: {e}")
 
         # =============================================================
         # 2. Если сервер не дал координаты
@@ -86,9 +86,9 @@ class APIAdapter(BaseAPIAdapter):
 
             if country_clean in self._fallback_bounds:
 
-                print("⚠️ Nominatim недоступен.")
+                print("❌ Nominatim недоступен.")
 
-                print("📚 Используем локальный справочник координат.")
+                print("⚠️ Используем локальный справочник координат.")
 
                 geo_coordinates = self._fallback_bounds[country_clean]
 
@@ -108,9 +108,9 @@ class APIAdapter(BaseAPIAdapter):
 
         print()
 
-        print(f"📍 Источник координат: {geo_source}")
+        print(f"✅ Источник координат: {geo_source}")
 
-        print(f"📍 Координаты зоны: {geo_coordinates}")
+        print(f"✅ Координаты зоны: {geo_coordinates}")
 
         # =============================================================
         # Запрос OpenSky
@@ -125,7 +125,7 @@ class APIAdapter(BaseAPIAdapter):
 
         print()
 
-        print("🌐 Отправляем запрос OpenSky:")
+        print("✅ Отправляем запрос OpenSky:")
 
         print(opensky_params)
 
@@ -135,31 +135,13 @@ class APIAdapter(BaseAPIAdapter):
 
             print()
 
-            print("🔗 URL запроса:")
+            print("✅ URL запроса:")
 
             print(response.url)
 
             if response.status_code == 200:
                 self.aeroplanes = response.json()
                 states = self.aeroplanes.get("states") or []  # type: ignore
-                # if response.status_code == 200:
-                #     data = response.json()
-                #
-                #     # Явно проверяем, что данные не None и это словарь
-                #     if isinstance(data, dict):
-                #         self.aeroplanes = data
-                #         states = self.aeroplanes.get("states") or []  # type: ignore
-                #
-                #         filtered_planes = []
-                #         for plane in states:
-                #             if isinstance(plane, list) and len(plane) > 2:
-                #                 filtered_planes.append(plane)
-                #     else:
-                #         # Обработка случая, когда JSON не является словарем (например, пришел список или None)
-                #         self.aeroplanes = {}
-                #         states = []
-                #         filtered_planes = []
-                #     # +++++++++++++++++++++++++++++++++++++++++++++++++
 
                 # базовая валидация данных по стране регистрации plane, чтобы не было пустых списков.
                 filtered_planes = []
@@ -178,6 +160,7 @@ class APIAdapter(BaseAPIAdapter):
                 print()
                 print(f"✅ Получены реальные данные OpenSky.")
                 print(f"✈️ Самолетов найдено в воздушном пространстве: {count}")
+                print("    Обновляем данные ...")
 
             else:
                 print(f"❌ OpenSky ошибка: {response.status_code}")
@@ -263,7 +246,7 @@ if __name__ == "__main__":
 
         else:
 
-            print("🌐 РЕАЛЬНЫЕ ДАННЫЕ OPEN SKY")
+            print("✅ РЕАЛЬНЫЕ ДАННЫЕ OPEN SKY")
 
             print("Полный список рейсов:")
 
@@ -285,4 +268,4 @@ if __name__ == "__main__":
 
     else:
 
-        print("🛬 Самолеты не найдены.")
+        print("❌ Самолеты не найдены.")
