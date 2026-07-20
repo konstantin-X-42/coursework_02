@@ -40,7 +40,7 @@ def test_api_adapter_creation():
 # Проверка успешного получения координат через OpenStreetMap
 # =====================================================================
 
-@patch("api.get")
+@patch("src.api.get")
 def test_get_aeroplanes_success(mock_get):
     """
     Проверяем успешный сценарий:
@@ -97,7 +97,7 @@ def test_get_aeroplanes_success(mock_get):
 # Проверка fallback координат
 # =====================================================================
 
-@patch("api.get")
+@patch("src.api.get")
 def test_get_aeroplanes_fallback(mock_get):
     """
     Если OpenStreetMap недоступен,
@@ -124,7 +124,7 @@ def test_get_aeroplanes_fallback(mock_get):
 # Проверка неизвестной страны
 # =====================================================================
 
-@patch("api.get")
+@patch("src.api.get")
 def test_unknown_country(mock_get):
     """
     Страна отсутствует в локальном справочнике.
@@ -151,7 +151,7 @@ def test_unknown_country(mock_get):
 # Проверка ошибки OpenSky
 # =====================================================================
 
-@patch("api.get")
+@patch("src.api.get")
 def test_opensky_error_generates_demo_data(mock_get):
     """
     Если OpenSky отвечает ошибкой,
@@ -197,7 +197,7 @@ def test_opensky_error_generates_demo_data(mock_get):
 # Проверка ошибки JSON OpenSky
 # =====================================================================
 
-@patch("api.get")
+@patch("src.api.get")
 def test_opensky_connection_exception(mock_get):
     """
     Ошибка соединения с OpenSky.
