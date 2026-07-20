@@ -12,6 +12,7 @@ from abc import ABC, abstractmethod
 
 class Order:
     """Товар информация и стоимость"""
+
     def __init__(self):
         """Конструктор инициализирует пустые списки"""
         self.items = []
@@ -27,13 +28,17 @@ class Order:
 
     def total_price(self):
         """Добавляем общую стоимость, что в заказе (перемножаем количество на цену)"""
-        return sum(quantities * prices for quantities, prices in zip(self.quantities, self.prices))
+        return sum(
+            quantities * prices
+            for quantities, prices in zip(self.quantities, self.prices)
+        )
 
 
-class PaymentProcessor(ABC):               # абстрактный класс
+class PaymentProcessor(ABC):  # абстрактный класс
     """Проведение платежа"""
+
     @abstractmethod
-    def pay(self, order):   # блокируем изменение интерфейса
+    def pay(self, order):  # блокируем изменение интерфейса
         pass
 
 
@@ -73,7 +78,7 @@ class PaypalPaymentProcessor(PaymentProcessor):
         order.status = "paid"
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Создаем заказ
     order = Order()
 
@@ -93,5 +98,5 @@ if __name__ == '__main__':
 
     # Оплачиваем заказ через Paypal
     print("\n- - оплата Paypal - -")
-    paypal_paymentProcessor = PaypalPaymentProcessor('user@mail.com')
+    paypal_paymentProcessor = PaypalPaymentProcessor("user@mail.com")
     paypal_paymentProcessor.pay(order)

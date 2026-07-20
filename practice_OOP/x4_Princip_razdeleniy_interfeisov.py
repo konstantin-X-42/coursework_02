@@ -20,6 +20,7 @@ from abc import ABC, abstractmethod
 
 class Order:
     """Товар информация и стоимость"""
+
     def __init__(self):
         """Конструктор инициализирует пустые списки"""
         self.items = []
@@ -35,19 +36,23 @@ class Order:
 
     def total_price(self):
         """Добавляем общую стоимость, что в заказе (перемножаем количество на цену)"""
-        return sum(quantities * prices for quantities, prices in zip(self.quantities, self.prices))
+        return sum(
+            quantities * prices
+            for quantities, prices in zip(self.quantities, self.prices)
+        )
 
 
 class PaymentProcessor(ABC):
     # Абстрактный класс
     @abstractmethod
     # Проведение платежа
-    def pay(self, order):   # блокируем изменение интерфейса
+    def pay(self, order):  # блокируем изменение интерфейса
         pass
 
 
 class PaymentProcessorSMS(PaymentProcessor):  # дочерний абстрактный класс
     """возвращаем платеж абстрактного метода от абстрактного класса родителя"""
+
     @abstractmethod
     # Проведение платежа
     def pay(self, order):
@@ -57,6 +62,7 @@ class PaymentProcessorSMS(PaymentProcessor):  # дочерний абстрак�
     # Авторизация платежа через смс, расширение функциональности через дочерний класс абстрактным методом
     def auth_sms(self, code):
         pass
+
 
 class DebitPaymentProcessor(PaymentProcessorSMS):
 
@@ -74,7 +80,7 @@ class DebitPaymentProcessor(PaymentProcessorSMS):
         """Оплата заказа дебетовой картой"""
         if not self.is_verified:
             print("Не авторизован")
-            return   # или можно использовать - exception
+            return  # или можно использовать - exception
         print("Обработка дебетового типа платежа")
         print(f"Проверка кода безопасности: {self.securite_code}")
         order.status = "paid"
@@ -93,7 +99,7 @@ class CreditPaymentProcessor(PaymentProcessor):
         order.status = "paid"
 
 
-class PaypalPaymentProcessor(PaymentProcessorSMS ):
+class PaypalPaymentProcessor(PaymentProcessorSMS):
 
     def __init__(self, user_email):
         """Конструктор верификации платежа"""
@@ -109,13 +115,13 @@ class PaypalPaymentProcessor(PaymentProcessorSMS ):
         """Оплата заказа через систему Paypal"""
         if not self.is_verified:
             print("Не авторизован")
-            return   # или можно использовать - exception
+            return  # или можно использовать - exception
         print("Обработка типа платежа Paypal")
         print(f"Отправка платежа на почту: {self.user_email}")
         order.status = "paid"
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Создаем заказ
     order = Order()
 
@@ -138,7 +144,7 @@ if __name__ == '__main__':
 
     # Оплачиваем заказ через Paypal
     print("\n- - оплата Paypal - -")
-    paypal_paymentProcessor = PaypalPaymentProcessor('user@mail.com')
+    paypal_paymentProcessor = PaypalPaymentProcessor("user@mail.com")
     # >>> Обработка типа платежа Paypal
     # >>> Отправка платежа на почту: user@mail.com
     paypal_paymentProcessor.auth_sms(1111)  # верификация платежа пользователем

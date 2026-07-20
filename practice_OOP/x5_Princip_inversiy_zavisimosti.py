@@ -40,14 +40,19 @@ class Order:
         self.prices.append(price)
 
     def total_price(self):
-        return sum(quantities * prices for quantities, prices in zip(self.quantities, self.prices))
+        return sum(
+            quantities * prices
+            for quantities, prices in zip(self.quantities, self.prices)
+        )
 
 
 class Authorizer(ABC):
     # Абстрактный клас авторизатор
     @abstractmethod
     # Абстрактный метод
-    def is_authorized(self, ) -> bool:
+    def is_authorized(
+        self,
+    ) -> bool:
         pass
 
 
@@ -126,7 +131,7 @@ class PaypalPaymentProcessor(PaymentProcessor):
         order.status = "paid"
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Создаем заказ
     order = Order()
     # Добавляем товары в заказ

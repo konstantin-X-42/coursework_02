@@ -9,6 +9,7 @@ Single Responsibility — каждый класс должен иметь тол
 
 class Order:
     """Товар информация и стоимость"""
+
     def __init__(self):
         """Конструктор инициализирует пустые списки"""
         self.items = []
@@ -24,11 +25,15 @@ class Order:
 
     def total_price(self):
         """Добавляем общую стоимость, что в заказе (перемножаем количество на цену)"""
-        return sum(quantities * prices for quantities, prices in zip(self.quantities, self.prices))
+        return sum(
+            quantities * prices
+            for quantities, prices in zip(self.quantities, self.prices)
+        )
 
 
 class PaymentProcessor:
     """Проведение платежа"""
+
     def pay_debit(self, security_code):
         """Оплата заказа дебетовой картой"""
         print("Обработка дебетового типа платежа")
@@ -40,8 +45,7 @@ class PaymentProcessor:
         print(f"Проверка кода безопасности: {security_code}")
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Создаем заказ
     order = Order()
 

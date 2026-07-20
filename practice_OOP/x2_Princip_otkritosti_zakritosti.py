@@ -7,11 +7,13 @@ Open/Closed — программные сущности (классы, моду�
 Используйте абстрактные классы. Они могут определить, какие подклассы требуются,
 и усилить принцип единой ответственности, разделив обязанности кода.
 """
+
 from abc import ABC, abstractmethod
 
 
 class Order:
     """Товар информация и стоимость"""
+
     def __init__(self):
         """Конструктор инициализирует пустые списки"""
         self.items = []
@@ -27,13 +29,17 @@ class Order:
 
     def total_price(self):
         """Добавляем общую стоимость, что в заказе (перемножаем количество на цену)"""
-        return sum(quantities * prices for quantities, prices in zip(self.quantities, self.prices))
+        return sum(
+            quantities * prices
+            for quantities, prices in zip(self.quantities, self.prices)
+        )
 
 
-class PaymentProcessor(ABC):               # абстрактный класс
+class PaymentProcessor(ABC):  # абстрактный класс
     """Проведение платежа"""
+
     @abstractmethod
-    def pay(self, order, securite_code):   # блокируем изменение интерфейса
+    def pay(self, order, securite_code):  # блокируем изменение интерфейса
         pass
 
 
@@ -55,7 +61,7 @@ class CreditPaymentProcessor(PaymentProcessor):
         order.status = "paid"
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Создаем заказ
     order = Order()
 

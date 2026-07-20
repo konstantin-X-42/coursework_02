@@ -2,9 +2,10 @@
 # модуль шага 3
 # =====================================================================
 
-from abc import ABC, abstractmethod
 import json
 import os
+from abc import ABC, abstractmethod
+
 # from models import Aeroplane
 from src.models import Aeroplane
 
@@ -20,7 +21,9 @@ class BaseStorage(ABC):
         pass
 
     @abstractmethod
-    def get_aeroplanes(self, min_speed: float = 0, min_altitude: float = 0) -> list[dict]:
+    def get_aeroplanes(
+        self, min_speed: float = 0, min_altitude: float = 0
+    ) -> list[dict]:
         """Получить данные из хранилища по указанным критериям."""
         pass
 
@@ -50,14 +53,14 @@ class JsonFileStorage(BaseStorage):
     def _read_file(self) -> list[dict]:
         """Внутренний метод для чтения сырых данных из JSON."""
         try:
-            with open(self.filename, 'r', encoding='utf-8') as f:
+            with open(self.filename, "r", encoding="utf-8") as f:
                 return json.load(f)
         except (json.JSONDecodeError, IOError):
             return []
 
     def _save_to_file(self, data: list[dict]) -> None:
         """Внутренний метод для записи данных в JSON."""
-        with open(self.filename, 'w', encoding='utf-8') as f:
+        with open(self.filename, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
 
     def clear_storage(self) -> None:
@@ -74,7 +77,7 @@ class JsonFileStorage(BaseStorage):
             "callsign": aeroplane.callsign,
             "origin_country": aeroplane.origin_country,
             "velocity": aeroplane.velocity,
-            "altitude": aeroplane.altitude
+            "altitude": aeroplane.altitude,
         }
 
         # Предотвращаем дублирование по позывному
@@ -83,7 +86,9 @@ class JsonFileStorage(BaseStorage):
         self._save_to_file(data)
 
     # Реализация метода ПОЛУЧЕНИЯ по критериям (Фильтрация)
-    def get_aeroplanes(self, min_speed: float = 0, min_altitude: float = 0) -> list[dict]:
+    def get_aeroplanes(
+        self, min_speed: float = 0, min_altitude: float = 0
+    ) -> list[dict]:
         all_planes = self._read_file()
         filtered_planes = []
 
@@ -99,7 +104,9 @@ class JsonFileStorage(BaseStorage):
         clean_callsign = callsign.strip().upper()
 
         # Оставляем только те самолеты, чей позывной не совпадает с удаляемым
-        filtered_data = [p for p in data if p["callsign"].strip().upper() != clean_callsign]
+        filtered_data = [
+            p for p in data if p["callsign"].strip().upper() != clean_callsign
+        ]
 
         if len(data) != len(filtered_data):
             print(f"🗑️ Из файла удален самолет с позывным {clean_callsign}.")

@@ -1,7 +1,8 @@
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
-from src.api import BaseAPIAdapter, APIAdapter
+import pytest
+
+from src.api import APIAdapter, BaseAPIAdapter
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # запуск тестов в модуле test_api.py с покрытием в html
@@ -12,6 +13,7 @@ from src.api import BaseAPIAdapter, APIAdapter
 # Проверка абстрактного класса
 # =====================================================================
 
+
 def test_base_api_adapter_is_abstract():
     """
     BaseAPIAdapter нельзя создать напрямую.
@@ -20,9 +22,11 @@ def test_base_api_adapter_is_abstract():
     with pytest.raises(TypeError):
         BaseAPIAdapter()
 
+
 # =====================================================================
 # Проверка создания APIAdapter
 # =====================================================================
+
 
 def test_api_adapter_creation():
     """
@@ -32,13 +36,14 @@ def test_api_adapter_creation():
     api = APIAdapter()
 
     assert api.aeroplanes is None
-
     assert "canada" in api._fallback_bounds
     assert "russia" in api._fallback_bounds
+
 
 # =====================================================================
 # Проверка успешного получения координат через OpenStreetMap
 # =====================================================================
+
 
 @patch("src.api.get")
 def test_get_aeroplanes_success(mock_get):
@@ -52,50 +57,32 @@ def test_get_aeroplanes_success(mock_get):
     osm_response = MagicMock()
     osm_response.status_code = 200
     osm_response.json.return_value = [
-        {
-            "boundingbox": [
-                "41.67",
-                "83.11",
-                "-141.00",
-                "-52.62"
-            ]
-        }
+        {"boundingbox": ["41.67", "83.11", "-141.00", "-52.62"]}
     ]
-
 
     # Второй вызов - OpenSky
     opensky_response = MagicMock()
     opensky_response.status_code = 200
     opensky_response.json.return_value = {
         "time": 123456,
-        "states": [
-            [
-                "abc123",
-                "TEST001",
-                "Canada"
-            ]
-        ]
+        "states": [["abc123", "TEST001", "Canada"]],
     }
 
-
-    mock_get.side_effect = [
-        osm_response,
-        opensky_response
-    ]
-
+    mock_get.side_effect = [osm_response, opensky_response]
 
     api = APIAdapter()
 
     api.get_aeroplanes("Canada")
 
-
     assert api.aeroplanes is not None
     assert "states" in api.aeroplanes
     assert len(api.aeroplanes["states"]) == 1
 
+
 # =====================================================================
 # Проверка fallback координат
 # =====================================================================
+
 
 @patch("src.api.get")
 def test_get_aeroplanes_fallback(mock_get):
@@ -105,10 +92,7 @@ def test_get_aeroplanes_fallback(mock_get):
     """
 
     # Ошибка первого запроса
-    mock_get.side_effect = Exception(
-        "Connection error"
-    )
-
+    mock_get.side_effect = Exception("Connection error")
 
     api = APIAdapter()
 
@@ -120,9 +104,11 @@ def test_get_aeroplanes_fallback(mock_get):
     assert api.aeroplanes is not None
     assert "demo1234" in api.aeroplanes["states"][0]
 
+
 # =====================================================================
 # Проверка неизвестной страны
 # =====================================================================
+
 
 @patch("src.api.get")
 def test_unknown_country(mock_get):
@@ -134,22 +120,19 @@ def test_unknown_country(mock_get):
     mock_response.status_code = 200
     mock_response.json.return_value = []
 
-
     mock_get.return_value = mock_response
-
 
     api = APIAdapter()
 
-    api.get_aeroplanes(
-        "Atlantis"
-    )
-
+    api.get_aeroplanes("Atlantis")
 
     assert api.aeroplanes is None
+
 
 # =====================================================================
 # Проверка ошибки OpenSky
 # =====================================================================
+
 
 @patch("src.api.get")
 def test_opensky_error_generates_demo_data(mock_get):
@@ -161,41 +144,27 @@ def test_opensky_error_generates_demo_data(mock_get):
     osm_response = MagicMock()
     osm_response.status_code = 200
     osm_response.json.return_value = [
-        {
-            "boundingbox": [
-                "41.67",
-                "83.11",
-                "-141.00",
-                "-52.62"
-            ]
-        }
+        {"boundingbox": ["41.67", "83.11", "-141.00", "-52.62"]}
     ]
-
 
     opensky_response = MagicMock()
     opensky_response.status_code = 500
 
-
-    mock_get.side_effect = [
-        osm_response,
-        opensky_response
-    ]
-
+    mock_get.side_effect = [osm_response, opensky_response]
 
     api = APIAdapter()
 
-    api.get_aeroplanes(
-        "Canada"
-    )
-
+    api.get_aeroplanes("Canada")
 
     assert api.aeroplanes is not None
     assert "states" in api.aeroplanes
     assert len(api.aeroplanes["states"]) == 1
 
+
 # =====================================================================
 # Проверка ошибки JSON OpenSky
 # =====================================================================
+
 
 @patch("src.api.get")
 def test_opensky_connection_exception(mock_get):
@@ -206,28 +175,14 @@ def test_opensky_connection_exception(mock_get):
     osm_response = MagicMock()
     osm_response.status_code = 200
     osm_response.json.return_value = [
-        {
-            "boundingbox": [
-                "41.67",
-                "83.11",
-                "-141.00",
-                "-52.62"
-            ]
-        }
+        {"boundingbox": ["41.67", "83.11", "-141.00", "-52.62"]}
     ]
 
-
-    mock_get.side_effect = [
-        osm_response,
-        Exception("Server unavailable")
-    ]
-
+    mock_get.side_effect = [osm_response, Exception("Server unavailable")]
 
     api = APIAdapter()
 
-    api.get_aeroplanes(
-        "Canada"
-    )
+    api.get_aeroplanes("Canada")
 
     assert api.offline_mode is True
     assert api.aeroplanes is not None

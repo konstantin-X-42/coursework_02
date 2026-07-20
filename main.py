@@ -10,6 +10,7 @@ from src.storage import JsonFileStorage
 # poetry run pytest --cov=. --cov-report=html
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+
 def user_interaction():
     """Функция для взаимодействия с пользователем через консоль (Шаг 4)."""
     api = APIAdapter()
@@ -20,31 +21,41 @@ def user_interaction():
     print("====================================================")
 
     # 1. Первый обязательный шаг: запрос данных по стране
-    target_country = input("👉 Введите название страны на английском (например, Canada): ").strip()
+    target_country = input(
+        "👉 Введите название страны на английском (например, Canada): "
+    ).strip()
 
     print(f"\n[Запрос] Поиск самолетов для страны: {target_country}...")
     api.get_aeroplanes(target_country)
 
     # Загружаем полученные данные в список объектов Aeroplane и сохраняем в файл
     aeroplanes_objects = []
-    if api.aeroplanes and 'states' in api.aeroplanes and api.aeroplanes['states'] is not None:
-        raw_planes = api.aeroplanes['states']
+    if (
+        api.aeroplanes
+        and "states" in api.aeroplanes
+        and api.aeroplanes["states"] is not None
+    ):
+        raw_planes = api.aeroplanes["states"]
         # ОЧИЩАЕМ СТАРЫЕ ДАННЫЕ ПЕРЕД НОВОЙ ЗАГРУЗКОЙ
         storage.clear_storage()
 
         for p in raw_planes:
             plane_obj = Aeroplane(
-                callsign=p[1],        # Индекс 1 — Позывной (например, "ACA123")
+                callsign=p[1],  # Индекс 1 — Позывной (например, "ACA123")
                 origin_country=p[2],  # Индекс 2 — Страна регистрации ("Canada")
-                velocity=p[9],        # Индекс 9 — Скорость
-                altitude=p[7]         # Индекс 7 — Высота
+                velocity=p[9],  # Индекс 9 — Скорость
+                altitude=p[7],  # Индекс 7 — Высота
             )
             storage.add_aeroplane(plane_obj)
             aeroplanes_objects.append(plane_obj)
 
-        print(f"✅ Данные успешно обновлены. Загружено объектов: {len(aeroplanes_objects)}")
+        print(
+            f"✅ Данные успешно обновлены. Загружено объектов: {len(aeroplanes_objects)}"
+        )
     else:
-        print("🛬 В этой зоне сейчас нет активных самолетов. Работаем с ранее сохраненной базой.")
+        print(
+            "🛬 В этой зоне сейчас нет активных самолетов. Работаем с ранее сохраненной базой."
+        )
 
     # 2. Основной цикл интерактивного меню
     while True:
@@ -71,7 +82,8 @@ def user_interaction():
             print(f"\n📊 Всего самолетов в базе: {len(planes_list)}")
             for idx, plane in enumerate(planes_list, 1):
                 print(
-                    f"{idx}. Позывной: {plane.callsign:<8} | Страна рег.: {plane.origin_country:<10} | Высота: {plane.altitude} м | Скорость: {plane.velocity} м/с")
+                    f"{idx}. Позывной: {plane.callsign:<8} | Страна рег.: {plane.origin_country:<10} | Высота: {plane.altitude} м | Скорость: {plane.velocity} м/с"
+                )
 
         elif choice == "2":
             if not planes_list:
@@ -79,37 +91,60 @@ def user_interaction():
                 continue
 
             try:
-                n = int(input(f"🔢 Сколько самолетов вывести в ТОП? (Доступно {len(planes_list)}): ").strip())
+                n = int(
+                    input(
+                        f"🔢 Сколько самолетов вывести в ТОП? (Доступно {len(planes_list)}): "
+                    ).strip()
+                )
                 if n <= 0:
                     print("❌ Число должно быть больше нуля.")
                     continue
 
                 # Используем встроенный метод сортировки. Так как мы настроили методы __lt__ и __gt__ в Шаге 2,
                 # Python может сортировать объекты. Отсортируем по высоте явно через lambda:
-                sorted_by_alt = sorted(planes_list, key=lambda x: x.altitude, reverse=True)
+                sorted_by_alt = sorted(
+                    planes_list, key=lambda x: x.altitude, reverse=True
+                )
 
-                print(f"\n👑 ТОП-{min(n, len(sorted_by_alt))} САМОЛЕТОВ ПО ВЫСОТЕ ПОЛЕТА:")
+                print(
+                    f"\n👑 ТОП-{min(n, len(sorted_by_alt))} САМОЛЕТОВ ПО ВЫСОТЕ ПОЛЕТА:"
+                )
                 for idx, plane in enumerate(sorted_by_alt[:n], 1):
                     print(
-                        f"🏆 {idx}. {plane.callsign:<8} -> Высота: {plane.altitude} м (Скорость: {plane.velocity} м/с)")
+                        f"🏆 {idx}. {plane.callsign:<8} -> Высота: {plane.altitude} м (Скорость: {plane.velocity} м/с)"
+                    )
             except ValueError:
                 print("❌ Пожалуйста, введите корректное целое число.")
 
         elif choice == "3":
-            search_country = input(
-                "🔍 Введите название страны регистрации для поиска (например, Canada): ").strip().lower()
-            filtered = [p for p in planes_list if p.origin_country.lower() == search_country]
+            search_country = (
+                input(
+                    "🔍 Введите название страны регистрации для поиска (например, Canada): "
+                )
+                .strip()
+                .lower()
+            )
+            filtered = [
+                p for p in planes_list if p.origin_country.lower() == search_country
+            ]
 
             if filtered:
-                print(f"\n✈️ Найденные самолеты, зарегистрированные в {search_country.capitalize()}:")
+                print(
+                    f"\n✈️ Найденные самолеты, зарегистрированные в {search_country.capitalize()}:"
+                )
                 for plane in filtered:
                     print(
-                        f"• Позывной: {plane.callsign:<8} | Высота: {plane.altitude} м | Скорость: {plane.velocity} м/с")
+                        f"• Позывной: {plane.callsign:<8} | Высота: {plane.altitude} м | Скорость: {plane.velocity} м/с"
+                    )
             else:
-                print(f"ℹ️ Самолётов со страной регистрации '{search_country.capitalize()}' не найдено.")
+                print(
+                    f"ℹ️ Самолётов со страной регистрации '{search_country.capitalize()}' не найдено."
+                )
 
         elif choice == "4":
-            callsign_to_del = input("🗑️ Введите позывной самолета для удаления: ").strip()
+            callsign_to_del = input(
+                "🗑️ Введите позывной самолета для удаления: "
+            ).strip()
             storage.delete_aeroplanes_by_callsign(callsign_to_del)
 
         elif choice == "5":

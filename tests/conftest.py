@@ -5,13 +5,13 @@ import pytest
 
 from src.storage import JsonFileStorage
 
-
 # =====================================================================
 # Фикстура временного JSON-хранилища
 # Используется в:
 # - test_storage.py
 # - test_main.py
 # =====================================================================
+
 
 @pytest.fixture
 def temp_storage():
@@ -23,15 +23,12 @@ def temp_storage():
     test_dir = "data_test"
     test_file = f"{test_dir}/test_flights.json"
 
-    storage = JsonFileStorage(
-        filename=test_file
-    )
+    storage = JsonFileStorage(filename=test_file)
 
     yield storage
 
     if os.path.exists(test_dir):
         shutil.rmtree(test_dir)
-
 
 
 # =====================================================================
@@ -40,6 +37,7 @@ def temp_storage():
 # - test_api.py
 # - test_main.py
 # =====================================================================
+
 
 @pytest.fixture
 def fake_api_data():
@@ -60,7 +58,7 @@ def fake_api_data():
                 45.42,
                 10000.0,
                 False,
-                250.5
+                250.5,
             ],
             [
                 "a143b8",
@@ -72,10 +70,11 @@ def fake_api_data():
                 51.04,
                 5000.0,
                 False,
-                150.2
-            ]
-        ]
+                150.2,
+            ],
+        ],
     }
+
 
 # =====================================
 # рабочий вариант

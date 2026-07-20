@@ -22,11 +22,21 @@ dev = [
     "flake8 (>=7.3.0,<8.0.0)",
     "mypy (>=2.3.0,<3.0.0)",
     "pytest (>=9.1.1,<10.0.0)",
-    "pytest-cov (>=7.1.0,<8.0.0)"
+    "pytest-cov (>=7.1.0,<8.0.0)",
+    "flake8-pyproject (>=1.2.4,<2.0.0)"
 ]
 
-[tool.poetry]
+[tool.poetry]  # определяем видимость структуры проекта
 packages = [
     {include = "src"},
     {include = "main.py"}
 ]
+
+[tool.flake8]
+max-line-length = 119  # длинна строки
+extend-ignore = ["E501", "E402", "F541"]
+#extend-ignore = ["E501"]  # отключает проверку линтерами и форматерами
+
+[tool.mypy]  # исключаем тобы он не ругался на аргументы requests
+ignore_missing_imports = true
+disable_error_code = ["assignment", "arg-type", "index"]
