@@ -55,17 +55,23 @@ __СТРУКТУРА ЭЛЕМЕНТОВ:__
 __СТРУКТУРА ПРОЕКТА:__
 ```
 coursework_02/
+|
 ├── main.py
-├── models.py
-├── storage.py
-├── api.py
+|
+├── src/
+│   ├── models.py
+│   ├── storage.py
+│   └── api.py
+|
 ├── data/
+│   └── flights_data.json
 │
 ├── tests/
 │   ├── conftest.py
 │   ├── test_models.py
 │   ├── test_storage.py
 │   └── test_api.py
+|
 └── pyproject.toml
 ```
 
