@@ -14,7 +14,6 @@ import main
 # Проверка функции main()
 # ====================================================================
 
-
 @patch("main.user_interaction")
 def test_main_function(mock_user):
     """
@@ -29,7 +28,6 @@ def test_main_function(mock_user):
 # ====================================================================
 # Проверка загрузки данных из API и сохранения
 # ====================================================================
-
 
 @patch("main.APIAdapter")
 @patch("main.JsonFileStorage")
@@ -57,7 +55,6 @@ def test_user_interaction_loads_planes(
 # ====================================================================
 # Проверка меню 1 ->> Показать все самолеты
 # ====================================================================
-
 
 @patch("main.APIAdapter")
 @patch("main.JsonFileStorage")
@@ -95,7 +92,6 @@ def test_menu_show_all_planes(
 # Проверка меню 2 ->> TOP-N по высоте
 # ====================================================================
 
-
 @patch("main.APIAdapter")
 @patch("main.JsonFileStorage")
 def test_menu_top_altitude(mock_storage, mock_api, monkeypatch, fake_api_data, capsys):
@@ -131,7 +127,6 @@ def test_menu_top_altitude(mock_storage, mock_api, monkeypatch, fake_api_data, c
 # Проверка ошибки TOP-N
 # ====================================================================
 
-
 @patch("main.APIAdapter")
 @patch("main.JsonFileStorage")
 def test_menu_top_invalid_number(mock_storage, mock_api, monkeypatch, capsys):
@@ -164,7 +159,6 @@ def test_menu_top_invalid_number(mock_storage, mock_api, monkeypatch, capsys):
 # ====================================================================
 # Проверка меню 3 ->> Фильтр по стране
 # ====================================================================
-
 
 @patch("main.APIAdapter")
 @patch("main.JsonFileStorage")
@@ -208,7 +202,6 @@ def test_menu_filter_country(
 # Проверка меню 4 ->> Удаление самолета
 # ====================================================================
 
-
 @patch("main.APIAdapter")
 @patch("main.JsonFileStorage")
 def test_menu_delete_plane(mock_storage, mock_api, monkeypatch, fake_api_data):
@@ -235,7 +228,6 @@ def test_menu_delete_plane(mock_storage, mock_api, monkeypatch, fake_api_data):
 # Проверка меню 5 ->> Выход из программы
 # ====================================================================
 
-
 @patch("main.APIAdapter")
 @patch("main.JsonFileStorage")
 def test_menu_exit(mock_storage, mock_api, monkeypatch, capsys):
@@ -259,7 +251,6 @@ def test_menu_exit(mock_storage, mock_api, monkeypatch, capsys):
 # ====================================================================
 # Проверка неверного пункта меню
 # ====================================================================
-
 
 @patch("main.APIAdapter")
 @patch("main.JsonFileStorage")
