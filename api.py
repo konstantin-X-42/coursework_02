@@ -228,39 +228,28 @@ class APIAdapter(BaseAPIAdapter):
                 response.url
             )
 
-
-
             if response.status_code == 200:
-                self.aeroplanes = (
-                    response.json()
-                )
+                self.aeroplanes = response.json()
                 states = self.aeroplanes.get("states") or []
+
+                # базовая валидация данных по стране регистрации plane, чтобы не было пустых списков.
                 filtered_planes = []
                 for plane in states:
-                    if (
-                            isinstance(plane, list)
-                            and len(plane) > 2
-                            and plane[2]
-                            and plane[2].lower() == country.lower()
-                    ):
+                    if isinstance(plane, list) and len(plane) > 2:
                         filtered_planes.append(plane)
+
+                # Если OpenSky вернул None вместо списка возвращаем пустой список
+                if self.aeroplanes is None:
+                    self.aeroplanes = {"time": 0, "states": []}
+
                 self.aeroplanes["states"] = filtered_planes
                 self.offline_mode = False
 
-                count = len(
-                    self.aeroplanes.get(
-                        "states",
-                        []
-                    )
-                    or []
-                )
+                count = len(filtered_planes)
                 print()
-                print(
-                    f"✅ Получены реальные данные OpenSky."
-                )
-                print(
-                    f"✈️ Самолетов найдено: {count}"
-                )
+                print(f"✅ Получены реальные данные OpenSky.")
+                print(f"✈️ Самолетов найдено в воздушном пространстве: {count}")
+
             else:
                 print(
                     f"❌ OpenSky ошибка: {response.status_code}"
