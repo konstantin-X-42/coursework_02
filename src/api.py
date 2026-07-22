@@ -159,7 +159,7 @@ class APIAdapter(BaseAPIAdapter):
                 print()
                 print(f"✅ Получены реальные данные OpenSky.")
                 print(f"✈️ Самолетов найдено в воздушном пространстве: {count}")
-                print("    Обновляем данные ...")
+                print("    Загружаем данные ...")
 
             else:
                 print(f"❌ OpenSky ошибка: {response.status_code}")
