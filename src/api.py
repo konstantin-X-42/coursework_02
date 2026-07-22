@@ -192,6 +192,8 @@ class APIAdapter(BaseAPIAdapter):
 
         except Exception as e:
             print(f"❌ Ошибка OpenSky: {e}")
+            print(f"❌ OpenSky недоступен.")
+            print(f"⚠️ ОФФЛАЙН режим, моделирование данных авиарейсов.")
             # Включаем демо-режим, если сервер вообще не доступен (нет сети, таймаут)
             self.offline_mode = True
             self.aeroplanes = {
